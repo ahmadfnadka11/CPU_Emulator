@@ -107,18 +107,27 @@ void cpu_step(CPU *cpu) {
         //JMP
         case 14:
             cpu->pc = imm;
-            break;
+            return;
         //BEQ
         case 15:
-            if(cpu->regs[rd] == cpu->regs[rs1]) cpu->pc = imm;
+            if(cpu->regs[rd] == cpu->regs[rs1]) {
+                cpu->pc = imm;
+                return;
+            }
             break;
         //BNE
         case 16:
-            if(cpu->regs[rd] != cpu->regs[rs1]) cpu->pc = imm;
+            if(cpu->regs[rd] != cpu->regs[rs1]) {
+                cpu->pc = imm;
+                return;
+            }
             break;
         //BLT
         case 17:
-            if(cpu->regs[rd] > cpu->regs[rs1]) cpu->pc = imm;
+            if(cpu->regs[rd] > cpu->regs[rs1]) {
+                cpu->pc = imm;
+                return;
+            }
             break;
 
     }
