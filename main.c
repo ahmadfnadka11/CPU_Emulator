@@ -98,11 +98,11 @@ void cpu_step(CPU *cpu) {
             break;
         //LOAD
         case 12:
-            cpu->regs[rd] = cpu->memory[cpu->reg[rs1] + imm];
+            cpu->regs[rd] = cpu->memory[cpu->regs[rs1] + imm];
             break;
         //STORE
         case 13:
-            cpu->memory[cpu->reg[rs1] + imm] = cpu->regs[rd];
+            cpu->memory[cpu->regs[rs1] + imm] = cpu->regs[rd];
             break;
         //JMP
         case 14:
@@ -132,24 +132,37 @@ void cpu_step(CPU *cpu) {
 
     }
     
-
-
     // Advancing the pc 
     cpu->pc++;
 }
+
+#define ENCODE_A(opcode, rd, rs1, rs2) (((opcode) << 27) | ((rd) << 23) | ((rs1) << 19) | ((rs2) << 15))
+#define ENCODE_B(opcode, rd, rs1, imm) (((opcode) << 27) | ((rd) << 23) | ((rs1) << 19) | ((imm) & 0x7FFFF))
+
 
 int main() {
     CPU cpu;
     cpu_init(&cpu);
 
-    // TODO: load a test program into cpu.memory
+    uint32_t program[] = {
+    ENCODE_B(9, 1, 0, 5),    // LOADI R1, 5
+    ENCODE_B(9, 2, 0, 10),   // LOADI R2, 10
+    ENCODE_A(2, 3, 1, 2),    // ADD R3, R1, R2
+    ENCODE_B(0, 0, 0, 0),    // HALT
+    };
+
+    for (int i = 0; i < 4; i++) {
+        cpu.memory[i] = program[i];
+    }
 
     while (!cpu.halted) {
         cpu_step(&cpu);
     }
 
     printf("Halted. Final register state:\n");
-    // TODO: print registers
+    for (int i = 0; i < NUM_REGS; i++) {
+        printf("R%d = %u\n", i, cpu.regs[i]);
+    }
 
     return 0;
 }
