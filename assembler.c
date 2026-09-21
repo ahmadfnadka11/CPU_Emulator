@@ -10,15 +10,16 @@ typedef struct {
     const char *name;
     int opcode;
     char format; // 'A' or 'B'
+    char type;
 } InstructionDef;
 
 InstructionDef instruction_table[] = {
-    {"HALT", 0, 'B'},  {"NOP", 1, 'B'},   {"ADD", 2, 'A'},   {"SUB", 3, 'A'},
-    {"AND", 4, 'A'},   {"OR", 5, 'A'},    {"XOR", 6, 'A'},   {"NOT", 7, 'A'},
-    {"MOV", 8, 'A'},   {"LOADI", 9, 'B'}, {"SHL", 10, 'B'},  {"SHR", 11, 'B'},
-    {"LOAD", 12, 'B'}, {"STORE", 13, 'B'},{"JMP", 14, 'B'},  {"BEQ", 15, 'B'},
-    {"BNE", 16, 'B'},  {"BLT", 17, 'B'},  {"BGT", 18, 'B'},  {"ADDI", 19, 'B'},
-    {"MUL", 20, 'A'},  {"JAL", 21, 'B'},  {"JR", 22, 'B'},
+    {"HALT", 0, 'B', 'N'},  {"NOP", 1, 'B', 'N'},   {"ADD", 2, 'A', 'T'},   {"SUB", 3, 'A', 'T'},
+    {"AND", 4, 'A', 'T'},   {"OR", 5, 'A', 'T'},    {"XOR", 6, 'A', 'T'},   {"NOT", 7, 'A', 'W'},
+    {"MOV", 8, 'A', 'W'},   {"LOADI", 9, 'B', 'F'}, {"SHL", 10, 'B', 'D'},  {"SHR", 11, 'B', 'D'},
+    {"LOAD", 12, 'B', 'D'}, {"STORE", 13, 'B', 'D'},{"JMP", 14, 'B', 'I'},  {"BEQ", 15, 'B', 'D'},
+    {"BNE", 16, 'B', 'D'},  {"BLT", 17, 'B', 'D'},  {"BGT", 18, 'B', 'D'},  {"ADDI", 19, 'B', 'D'},
+    {"MUL", 20, 'A', 'T'},  {"JAL", 21, 'B', 'F'},  {"JR", 22, 'B', 'R'},
 };
 #define NUM_INSTRUCTIONS 23
 
@@ -59,6 +60,7 @@ int main(int argc, char *argv[]) {
     while (fgets(line, sizeof(line), input_file)) {
         char *mnemonic = strtok(line, " ,\n");
         if (mnemonic == NULL) continue; // skip blank lines
+        //printf("Processing: %s\n", mnemonic);   
 
         InstructionDef *def = lookup_instruction(mnemonic);
         if (def == NULL) {
@@ -74,17 +76,54 @@ int main(int argc, char *argv[]) {
 
         // convert the register name to a normal number 
 
-        int rd = parse_operand(rd_tok);
-        int rs1 = parse_operand(rs1_tok);
-        int rs2 = parse_operand(rs2_tok);
+        int rd = 0;
+        if(rd_tok != NULL){ 
+             rd = parse_operand(rd_tok); 
+         }
+
+        int rs1 = 0;
+        if(rs1_tok != NULL){ 
+             rs1 = parse_operand(rs1_tok); 
+         }
+
+        int rs2 = 0;
+        if(rs2_tok != NULL){ 
+             rs2 = parse_operand(rs2_tok); 
+         }
+        
 
         // writing the encode for each format 
 
         uint32_t instruction;
-        if(def->format == 'A')  { instruction = ENCODE_A(def->opcode, rd, rs1, rs2); } 
-        else { instruction = ENCODE_B(def->opcode, rd, rs1, rs2); }
+        if(def->format == 'A')  { 
+            switch(def->type){
+                case 'T':
+                    instruction = ENCODE_A(def->opcode, rd, rs1, rs2);
+                    break;
+                case 'W':
+                    instruction = ENCODE_A(def->opcode, rd, rs1, 0);
+                    break;
+            }
+         } 
+        else { switch(def->type){
+            case 'F':
+                instruction = ENCODE_B(def->opcode, rd, 0, rs1);
+                break;
+            case 'D':
+                instruction = ENCODE_B(def->opcode, rd, rs1, rs2);
+                break;
+            case 'I':
+                instruction = ENCODE_B(def->opcode, 0, 0, rd);
+                break;
+            case 'R':
+                instruction = ENCODE_B(def->opcode, 0, rd, 0);
+                break;
+            case 'N':
+                instruction = ENCODE_B(def->opcode, 0, 0, 0);
+                break;
+        } }
 
-        // TODO: write it out with:
+        
         fwrite(&instruction, sizeof(uint32_t), 1, output_file);
     }
 

@@ -47,6 +47,8 @@ void cpu_step(CPU *cpu) {
     // Format B - getting imm field
     uint32_t imm = instruction & 0x7FFFF;
 
+
+    //printf("PC=%u opcode=%u rd=%u rs1=%u rs2=%u imm=%u\n", cpu->pc, opcode, rd, rs1, rs2, imm);
     // Execute
     switch (opcode){
         //HALT
@@ -163,30 +165,36 @@ void cpu_step(CPU *cpu) {
 #define ENCODE_B(opcode, rd, rs1, imm) (((opcode) << 27) | ((rd) << 23) | ((rs1) << 19) | ((imm) & 0x7FFFF))
 
 
-int main() {
+int main(int argc, char *argv[]) {
+
+    // reading the files and doing checks
+    if (argc < 2) {
+        printf("Usage: %s input.asm \n", argv[0]);
+        return 1;
+    }
+
+    FILE *input_file = fopen(argv[1], "rb");
+    if (!input_file) {
+        printf("Error opening files\n");
+        return 1;
+    }
+    
     CPU cpu;
     cpu_init(&cpu);
 
-    uint32_t program[] = {
-    ENCODE_B(9, 1, 0, 1),    // LOADI R1, 0 --> i = 1
-    ENCODE_B(9, 2, 0, 11),   // LOADI R2, 10 --> num of attempts 
-    ENCODE_B(9, 3, 0, 0),    // LOADI R3, 0 --> sum = 0
-    ENCODE_A(2, 3, 3, 1),    // ADD R3 = R1 + R3
-    ENCODE_B(19, 1, 1, 1),   // ADDI R1++
-    ENCODE_B(17, 2, 1, 3),   // BLT Rd > R1 jump to address 3
-    ENCODE_B(0, 0, 0, 0),    // HALT
-    };
+    
+    
+    size_t count = fread(cpu.memory, sizeof(uint32_t), MEM_SIZE, input_file);
 
-    for (int i = 0; i < 7; i++) {
-        cpu.memory[i] = program[i];
-    }
+
+    fclose(input_file);
+
 
     while (!cpu.halted) {
         cpu_step(&cpu);
     }
 
-    printf("Halted. Final register state:\n");
-    for (int i = 0; i < NUM_REGS; i++) {
+        for (int i = 0; i < NUM_REGS; i++) {
         printf("R%d = %u\n", i, cpu.regs[i]);
     }
 
