@@ -129,7 +129,30 @@ void cpu_step(CPU *cpu) {
                 return;
             }
             break;
-
+        //BGT
+        case 18:
+            if(cpu->regs[rd] < cpu->regs[rs1]) {
+                cpu->pc = imm;
+                return;
+            }
+            break;
+        //ADDI
+        case 19:
+            cpu->regs[rd] = cpu->regs[rs1] + imm;
+            break;
+        //MUL
+        case 20:
+            cpu->regs[rd] = cpu->regs[rs1] * cpu->regs[rs2];
+            break;
+        //JAL
+        case 21:
+            cpu->regs[rd] = cpu->pc + 1;
+            cpu->pc = imm;
+            return;
+        //JR
+        case 22:
+            cpu->pc = cpu->regs[rs1];
+            return;
     }
     
     // Advancing the pc 
