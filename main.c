@@ -168,13 +168,16 @@ int main() {
     cpu_init(&cpu);
 
     uint32_t program[] = {
-    ENCODE_B(9, 1, 0, 5),    // LOADI R1, 5
-    ENCODE_B(9, 2, 0, 10),   // LOADI R2, 10
-    ENCODE_A(2, 3, 1, 2),    // ADD R3, R1, R2
+    ENCODE_B(9, 1, 0, 1),    // LOADI R1, 0 --> i = 1
+    ENCODE_B(9, 2, 0, 11),   // LOADI R2, 10 --> num of attempts 
+    ENCODE_B(9, 3, 0, 0),    // LOADI R3, 0 --> sum = 0
+    ENCODE_A(2, 3, 3, 1),    // ADD R3 = R1 + R3
+    ENCODE_B(19, 1, 1, 1),   // ADDI R1++
+    ENCODE_B(17, 2, 1, 3),   // BLT Rd > R1 jump to address 3
     ENCODE_B(0, 0, 0, 0),    // HALT
     };
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 7; i++) {
         cpu.memory[i] = program[i];
     }
 
