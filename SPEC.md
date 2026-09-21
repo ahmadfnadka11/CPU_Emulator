@@ -17,3 +17,8 @@ Opcode	Mnemonic	Format	Meaning
 15	BEQ	B	if rs1 == rd: pc = imm
 16	BNE	B	if rs1 != rd: pc = imm
 17	BLT	B	if rs1 < rd: pc = imm
+18	BGT	B	if rs1 > rd: pc = imm
+19	ADDI	B	rd = rs1 + imm
+20	MUL	A	rd = rs1 * rs2
+21	JAL	B	rd = pc + 1, then pc = imm
+22	JR	B	pc = rs1 (uses only the rs1 field)
