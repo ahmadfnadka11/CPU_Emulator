@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 
     char line[256];
     while (fgets(line, sizeof(line), input_file)) {
-        char *mnemonic = strtok(line, " ,\n");
+        char *mnemonic = strtok(line, " ,\r\n");
         if (mnemonic == NULL) continue; // skip blank lines
         //printf("Processing: %s\n", mnemonic);   
 
@@ -70,9 +70,9 @@ int main(int argc, char *argv[]) {
 
         // parsing the line to get the tokens ready for conversion 
 
-        char *rd_tok = strtok(NULL, " ,\n");
-        char *rs1_tok = strtok(NULL, " ,\n");
-        char *rs2_tok = strtok(NULL, " ,\n");
+        char *rd_tok = strtok(NULL, " ,\r\n");
+        char *rs1_tok = strtok(NULL, " ,\r\n");
+        char *rs2_tok = strtok(NULL, " ,\r\n");
 
         // convert the register name to a normal number 
 
